@@ -1,0 +1,34 @@
+services:
+
+  db:
+    image: mysql:8.0
+
+    environment:
+      MYSQL_DATABASE: ecommerce
+      MYSQL_USER: wordpress
+      MYSQL_PASSWORD: wordpress
+      MYSQL_ROOT_PASSWORD: root
+
+    volumes:
+      - db_data:/var/lib/mysql
+
+  wordpress:
+    image: wordpress:latest
+
+    ports:
+      - "8080:80"
+
+    environment:
+      WORDPRESS_DB_HOST: db
+      WORDPRESS_DB_NAME: ecommerce
+      WORDPRESS_DB_USER: wordpress
+      WORDPRESS_DB_PASSWORD: wordpress
+
+    depends_on:
+      - db
+
+    volumes:
+      - ./theme:/var/www/html/wp-content/themes/ecommerce-joias
+
+volumes:
+  db_data:
