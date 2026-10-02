@@ -1,0 +1,13 @@
+# Arquivos instalados e gerados pelo WordPress. Versionar apenas o tema próprio.
+/wp-content/*
+!/wp-content/themes/
+/wp-content/themes/*
+!/wp-content/themes/ecommerce-joias/
+
+# Configurações locais, credenciais e logs.
+.env
+.env.*
+!.env.example
+/wp-config.php
+*.log
+/.aws/

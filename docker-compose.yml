@@ -12,6 +12,7 @@ services:
     volumes:
       - db_data:/var/lib/mysql
 
+
   wordpress:
     image: wordpress:latest
 
@@ -28,7 +29,11 @@ services:
       - db
 
     volumes:
-      - ./theme:/var/www/html/wp-content/themes/ecommerce-joias
+      - wordpress_data:/var/www/html
+      - ./wp-content:/var/www/html/wp-content
 
 volumes:
+
   db_data:
+
+  wordpress_data:
