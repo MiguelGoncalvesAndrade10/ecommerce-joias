@@ -33,7 +33,8 @@
 			(window.innerHeight - heroPosition.top) /
 			(window.innerHeight + heroPosition.height);
 
-		const offset = (progress - 0.5) * 192;
+		// Movimento ampliado temporariamente para facilitar a avaliação visual do parallax.
+		const offset = (progress - 0.5) * 480;
 
 		heroMedia.style.transform = `translate3d(0, ${offset.toFixed(2)}px, 0)`;
 	};

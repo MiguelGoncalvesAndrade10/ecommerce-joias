@@ -5,6 +5,9 @@
  * @package Ecommerce_Joias
  */
 
+/**
+ * Busca informações do tema Ecommerce Joias para exibição na página inicial.
+ */
 $hero_image_id = absint( get_theme_mod( 'ecommerce_joias_hero_image', 0 ) );
 $hero_image    = '';
 $brand_story_enabled  = (bool) get_theme_mod( 'ecommerce_joias_brand_story_enabled', true );
@@ -20,6 +23,8 @@ $brand_story_button_label = get_theme_mod( 'ecommerce_joias_brand_story_button_l
 $brand_story_background = sanitize_hex_color(
 	get_theme_mod( 'ecommerce_joias_brand_story_background', '#ae4540' )
 );
+
+
 $featured_categories = get_terms(
 	array(
 		'taxonomy'   => 'product_cat',

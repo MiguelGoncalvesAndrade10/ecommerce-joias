@@ -74,6 +74,229 @@ a:focus-visible {
 }
 
 /*
+ * Cabeçalho próprio: marca central, busca e ações de compra em uma faixa
+ * compacta. O posicionamento sticky mantém a navegação acessível na rolagem
+ * sem retirar espaço do conteúdo, como ocorreria com position: fixed.
+ */
+.nc-header {
+	position: sticky;
+	top: 0;
+	z-index: 1000;
+	border-top: 3px solid var(--nc-header-top-background);
+	border-bottom: 1px solid color-mix(in srgb, var(--nc-header-text) 15%, transparent);
+	background-color: color-mix(in srgb, var(--nc-header-surface) 96%, transparent);
+	box-shadow: 0 0.4rem 1.5rem rgba(51, 41, 39, 0.06);
+}
+
+.admin-bar .nc-header {
+	top: 32px;
+}
+
+.nc-header__row {
+	display: grid;
+	grid-template-columns: auto minmax(0, 1fr) auto;
+	align-items: center;
+	gap: clamp(1rem, 2vw, 2.5rem);
+	width: min(100% - 3rem, var(--nc-content-width));
+	min-height: 3.8rem;
+	margin: 0 auto;
+}
+
+.nc-header__utilities {
+	display: flex;
+	align-items: center;
+	gap: 0.75rem;
+}
+
+.nc-header__search {
+	display: flex;
+	align-items: center;
+	width: clamp(8rem, 15vw, 13rem);
+	margin: 0;
+	border-bottom: 1px solid color-mix(in srgb, var(--nc-header-text) 25%, transparent);
+}
+
+.nc-header__search input[type="search"] {
+	min-width: 0;
+	height: 2.5rem;
+	padding: 0;
+	border: 0;
+	background: transparent;
+	color: var(--nc-header-text);
+	font-size: 0.85rem;
+}
+
+.nc-header__search input[type="search"]:focus {
+	border: 0;
+	outline: 0;
+}
+
+.nc-header__search:focus-within {
+	border-color: var(--nc-header-accent);
+}
+
+.nc-header__search button,
+.nc-header__action {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 2.4rem;
+	height: 2.4rem;
+	border: 1px solid color-mix(in srgb, var(--nc-header-text) 25%, transparent);
+	border-radius: 50%;
+	background: transparent;
+	color: var(--nc-header-text);
+	font-size: 1.2rem;
+	text-decoration: none;
+	transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+.nc-header__search button {
+	flex: 0 0 auto;
+	width: 2rem;
+	height: 2rem;
+	border: 0;
+}
+
+.nc-header__search button:hover,
+.nc-header__search button:focus-visible,
+.nc-header__action:hover,
+.nc-header__action:focus-visible {
+	border-color: var(--nc-header-accent);
+	background-color: var(--nc-header-accent);
+	color: var(--nc-color-white);
+}
+
+.nc-header__brand {
+	white-space: nowrap;
+}
+
+.nc-header__brand a {
+	color: var(--nc-header-text);
+	font-family: var(--nc-font-display);
+	font-size: clamp(1.25rem, 2.2vw, 1.7rem);
+	font-weight: 600;
+	letter-spacing: 0.12em;
+	text-decoration: none;
+	text-transform: uppercase;
+}
+
+.nc-header__brand .custom-logo-link {
+	display: block;
+}
+
+.nc-header__brand .custom-logo {
+	width: auto;
+	max-height: 2.4rem;
+}
+
+.nc-header__actions {
+	display: flex;
+	gap: 0.5rem;
+}
+
+.nc-header__cart {
+	position: relative;
+}
+
+.nc-header__cart-count {
+	position: absolute;
+	top: -0.35rem;
+	right: -0.35rem;
+	display: grid;
+	place-items: center;
+	min-width: 1.1rem;
+	height: 1.1rem;
+	padding: 0 0.2rem;
+	border-radius: 999px;
+	background-color: var(--nc-header-accent);
+	color: var(--nc-color-white);
+	font-size: 0.65rem;
+	font-weight: 700;
+}
+
+.nc-header__navigation {
+	min-width: 0;
+	background-color: var(--nc-header-navigation-background);
+}
+
+.nc-header__menu {
+	display: flex;
+	justify-content: center;
+	gap: clamp(0.75rem, 2vw, 1.75rem);
+	width: 100%;
+	margin: 0 auto;
+	padding: 0;
+	list-style: none;
+}
+
+.nc-header__menu a {
+	display: block;
+	padding: 0.35rem 0;
+	border-bottom: 2px solid transparent;
+	color: var(--nc-header-text);
+	font-size: 0.72rem;
+	font-weight: 600;
+	letter-spacing: 0.1em;
+	text-decoration: none;
+	text-transform: uppercase;
+}
+
+.nc-header__menu .current-menu-item > a,
+.nc-header__menu a:hover,
+.nc-header__menu a:focus-visible {
+	border-color: var(--nc-header-accent);
+	color: var(--nc-header-accent);
+}
+
+@media (max-width: 782px) {
+	.admin-bar .nc-header {
+		top: 46px;
+	}
+}
+
+@media (max-width: 640px) {
+	.nc-header__row {
+		grid-template-columns: auto minmax(0, 1fr) auto;
+		gap: 0.75rem;
+		width: min(100% - 2rem, var(--nc-content-width));
+		min-height: 3.5rem;
+	}
+
+	.nc-header__search {
+		display: none;
+	}
+
+	.nc-header__menu {
+		justify-content: flex-start;
+		gap: 1rem;
+		width: 100%;
+		padding: 0;
+		overflow-x: auto;
+		white-space: nowrap;
+		scrollbar-width: none;
+	}
+
+	.nc-header__menu::-webkit-scrollbar {
+		display: none;
+	}
+
+	.nc-header__menu a {
+		padding: 0.25rem 0;
+		font-size: 0.66rem;
+	}
+
+	.nc-header__brand a {
+		font-size: 1.05rem;
+	}
+
+	.nc-header__action {
+		width: 2.15rem;
+		height: 2.15rem;
+	}
+}
+
+/*
  * Botões de compra e chamadas para ação.
  *
  * Os seletores incluem botões do WooCommerce e botões criados
@@ -532,11 +755,75 @@ body.nc-store-page-header-hidden .os-breadcrumb-wrap {
 	margin: 0;
 }
 
-/* Área Minha conta */
-.woocommerce-account .woocommerce {
+/*
+ * Ações pessoais do cabeçalho: o acesso à conta fica ao lado do carrinho para
+ * manter a navegação principal dedicada às categorias e à descoberta de peças.
+ */
+.wishlist-minicart-inner,
+.mobile-header .minicart-column {
+	display: flex;
+	align-items: center;
+	gap: 0.75rem;
+}
+
+.wishlist-minicart-inner {
+	flex-wrap: nowrap;
+	justify-content: flex-end;
+}
+
+.header-style-1 .wishlist-minicart-wrapper {
+	flex: 0 0 6rem;
+	max-width: 6rem;
+}
+
+.nc-header-account-icon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 2.5rem;
+	height: 2.5rem;
+	border: 2px solid var(--nc-color-primary);
+	border-radius: 50%;
+	color: var(--nc-color-text);
+	font-size: 1.25rem;
+	text-decoration: none;
+	transition: background-color 0.2s linear, border-color 0.2s linear, color 0.2s linear;
+}
+
+.nc-header-account-icon:hover,
+.nc-header-account-icon:focus-visible {
+	border-color: var(--nc-color-primary);
+	background-color: var(--nc-color-primary);
+	color: var(--nc-color-white);
+}
+
+/* Carrinho compacto: o total abre espaço para o ícone de conta no cabeçalho. */
+.masterheader .mini-cart {
+	justify-content: center;
+	width: 2.5rem;
+	min-width: 2.5rem;
+	height: 2.5rem;
+	padding: 0;
+	border-color: var(--nc-color-primary);
+	border-radius: 50%;
+	transition: background-color 0.2s linear, border-color 0.2s linear, color 0.2s linear;
+}
+
+.masterheader .mini-cart .trigger-mini-cart {
+	margin-right: 0;
+}
+
+.masterheader .mini-cart .cart-amount {
+	display: none;
+}
+
+/*
+ * Área Minha Conta: acesso simples para visitantes e navegação horizontal para
+ * clientes, priorizando pedidos, dados pessoais e endereços na versão 1.0.
+ */
+.woocommerce-account .woocommerce:has(.woocommerce-MyAccount-navigation) {
 	display: grid !important;
-	grid-template-columns: minmax(12rem, 0.3fr) minmax(0, 1fr);
-	gap: clamp(1.5rem, 4vw, 3rem);
+	gap: clamp(1.5rem, 3vw, 2.5rem);
 }
 
 .woocommerce-account .woocommerce-MyAccount-navigation,
@@ -551,19 +838,26 @@ body.nc-store-page-header-hidden .os-breadcrumb-wrap {
 }
 
 .woocommerce-account .woocommerce-MyAccount-navigation {
-	padding: 0.75rem;
-	background-color: var(--nc-store-account-navigation-background);
+	padding: 0;
+	border: 0;
+	border-bottom: 1px solid var(--nc-color-border);
+	background-color: transparent;
 }
 
 .woocommerce-account .woocommerce-MyAccount-navigation ul {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.5rem;
 	margin: 0;
-	padding: 0;
+	padding: 0 0 1rem;
 	list-style: none;
 }
 
 .woocommerce-account .woocommerce-MyAccount-navigation a {
 	display: block;
-	padding: 0.85rem 1rem;
+	padding: 0.7rem 0.95rem;
+	border: 1px solid transparent;
+	border-radius: 999px;
 	color: var(--nc-store-account-navigation-text);
 	font-size: 0.76rem;
 	font-weight: 600;
@@ -576,16 +870,57 @@ body.nc-store-page-header-hidden .os-breadcrumb-wrap {
 .woocommerce-account .woocommerce-MyAccount-navigation a:hover,
 .woocommerce-account .woocommerce-MyAccount-navigation a:focus-visible {
 	background-color: var(--nc-store-account-navigation-active);
+	border-color: var(--nc-store-account-navigation-active);
 	color: var(--nc-color-white);
 }
 
 .woocommerce-account .woocommerce-MyAccount-content {
+	min-height: 20rem;
 	padding: clamp(1.5rem, 4vw, 3rem);
+	box-shadow: 0 1rem 3rem rgba(51, 41, 39, 0.08);
 }
 
 .woocommerce-account .woocommerce-MyAccount-content > :last-child,
 .woocommerce-account .woocommerce-MyAccount-content p:last-child {
 	margin-bottom: 0;
+}
+
+.woocommerce-account .woocommerce:not(:has(.woocommerce-MyAccount-navigation)) {
+	max-width: 34rem;
+	margin: 0 auto;
+}
+
+.woocommerce-account .woocommerce:not(:has(.woocommerce-MyAccount-navigation)) > h2 {
+	margin-bottom: 1.25rem;
+	color: var(--nc-color-primary);
+	font-family: var(--nc-font-display);
+	font-size: clamp(1.8rem, 4vw, 2.5rem);
+	text-align: center;
+}
+
+.woocommerce-account .woocommerce-form-login .form-row:last-of-type {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 0.75rem 1rem;
+	margin-bottom: 0;
+}
+
+.woocommerce-account .woocommerce-form-login .woocommerce-form-login__rememberme {
+	margin: 0;
+}
+
+.woocommerce-account .woocommerce-form-login .button {
+	margin-left: auto;
+}
+
+.woocommerce-account .woocommerce-LostPassword {
+	margin: 1.25rem 0 0;
+	text-align: center;
+}
+
+.woocommerce-account .woocommerce-LostPassword a {
+	color: var(--nc-color-primary);
 }
 
 .woocommerce-account .woocommerce-Addresses .woocommerce-Address,
@@ -607,19 +942,19 @@ body.nc-store-page-header-hidden .os-breadcrumb-wrap {
 }
 
 @media (max-width: 800px) {
-	.woocommerce-account .woocommerce {
-		grid-template-columns: 1fr;
+	.woocommerce-account .woocommerce-MyAccount-navigation ul {
+		flex-wrap: nowrap;
+		overflow-x: auto;
+		padding-bottom: 1rem;
+		scrollbar-width: thin;
 	}
 
-	.woocommerce-account .woocommerce-MyAccount-navigation ul {
-		display: grid;
-		grid-template-columns: repeat(2, minmax(0, 1fr));
+	.woocommerce-account .woocommerce-MyAccount-navigation li {
+		flex: 0 0 auto;
 	}
-}
 
-@media (max-width: 480px) {
-	.woocommerce-account .woocommerce-MyAccount-navigation ul {
-		grid-template-columns: 1fr;
+	.woocommerce-account .woocommerce-form-login .button {
+		margin-left: 0;
 	}
 }
 
@@ -925,7 +1260,7 @@ body.nc-store-page-header-hidden .os-breadcrumb-wrap {
 .nc-hero {
 	position: relative;
 	display: grid;
-	min-height: clamp(32rem, 70vh, 48rem);
+	min-height: clamp(38rem, 80vh, 58rem);
 	overflow: hidden;
 	place-items: center;
 	padding: clamp(5rem, 10vw, 9rem) 1.5rem;
@@ -1018,7 +1353,8 @@ body.nc-store-page-header-hidden .os-breadcrumb-wrap {
 .nc-hero__media {
 	position: absolute;
 	z-index: 0;
-	inset: -12% 0;
+	/* Margem extra para o deslocamento maior da imagem no efeito parallax. */
+	inset: -30% 0;
 	will-change: transform;
 }
 
@@ -1329,136 +1665,6 @@ body.nc-store-page-header-hidden .os-breadcrumb-wrap {
 		order: -1;
 		min-height: 15rem;
 	}
-}
-
-/*
- * Cabeçalho herdado do Orchid Store
- */
-.masterheader {
-	border-bottom: 1px solid var(--nc-color-border);
-	background-color: var(--nc-header-surface);
-}
-
-.masterheader .top-header {
-	background-color: var(--nc-header-top-background);
-}
-
-.masterheader .top-header a,
-.masterheader .top-header .login_register_link a {
-	color: var(--nc-color-white);
-	font-size: 0.7rem;
-	letter-spacing: 0.08em;
-	text-decoration: none;
-	text-transform: uppercase;
-}
-
-.masterheader .mid-header,
-.masterheader .mid-block {
-	background-color: var(--nc-header-surface);
-}
-
-.masterheader .site-branding .site-title a {
-	color: var(--nc-header-text);
-	font-family: var(--nc-font-display);
-	font-size: clamp(1.35rem, 2vw, 2rem);
-	font-weight: 400;
-	letter-spacing: 0.08em;
-	text-decoration: none;
-	text-transform: uppercase;
-}
-
-.masterheader .site-branding .site-description {
-	margin-top: 0.2rem;
-	color: var(--nc-color-muted);
-	font-size: 0.7rem;
-	letter-spacing: 0.12em;
-	text-transform: uppercase;
-}
-
-.masterheader .site-branding .custom-logo,
-.masterheader .site-branding .mobile-logo {
-	width: auto;
-	max-height: 4.5rem;
-}
-
-.masterheader .bottom-header,
-.masterheader .bottom-block,
-.masterheader .main-navigation {
-	border-top: 1px solid var(--nc-color-border);
-	background-color: var(--nc-header-navigation-background);
-}
-
-.masterheader .site-navigation .primary-menu > li > a {
-	color: var(--nc-header-text);
-	font-size: 0.72rem;
-	font-weight: 600;
-	letter-spacing: 0.11em;
-	text-transform: uppercase;
-}
-
-.masterheader .site-navigation .primary-menu > li > a:hover,
-.masterheader .site-navigation .primary-menu > li.current-menu-item > a,
-.masterheader .site-navigation .primary-menu > li.current-menu-ancestor > a {
-	color: var(--nc-header-accent);
-}
-
-.masterheader .mini-cart .trigger-mini-cart,
-.masterheader .wishlist-icon-container a,
-.masterheader .search-toggle,
-.masterheader .mobile-menu-toggle-btn {
-	color: var(--nc-header-text);
-}
-
-.masterheader .mini-cart button,
-.masterheader .wishlist-icon-container a {
-	background-color: transparent;
-}
-
-.masterheader .custom-search-entry button,
-.masterheader .custom-search .search-form button {
-	background-color: var(--nc-header-accent);
-	color: var(--nc-color-white);
-}
-
-.masterheader .custom-search-entry button:hover,
-.masterheader .custom-search-entry button:focus-visible,
-.masterheader .custom-search .search-form button:hover,
-.masterheader .custom-search .search-form button:focus-visible {
-	background-color: var(--nc-header-text) !important;
-	color: var(--nc-color-white) !important;
-}
-
-.masterheader .search-toggle:hover,
-.masterheader .search-toggle:focus-visible {
-	background-color: transparent !important;
-	color: var(--nc-header-accent) !important;
-}
-
-.masterheader .mini-cart,
-.header-style-1 .custom-search-entry,
-.header-style-1 .custom-search-entry .select-custom {
-	border-color: var(--nc-header-accent);
-}
-
-.masterheader .mini-cart .item-count,
-.masterheader .wishlist-icon-container .item-count {
-	background-color: var(--nc-header-accent);
-	color: var(--nc-color-white);
-}
-
-.masterheader .mobile-menu-toggle-btn:focus-visible,
-.masterheader .site-navigation a:focus-visible {
-	outline: 2px solid var(--nc-color-gold);
-	outline-offset: 3px;
-}
-
-.mobile-navigation {
-	background-color: var(--nc-header-surface);
-}
-
-.mobile-navigation a,
-.mobile-navigation .trigger-mob-nav-close {
-	color: var(--nc-header-text);
 }
 
 .orchid-backtotop {

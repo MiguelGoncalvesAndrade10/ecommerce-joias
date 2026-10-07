@@ -9,6 +9,28 @@ defined( 'ABSPATH' ) || exit;
  * Carrega os estilos próprios depois do CSS e das opções visuais do Orchid Store.
  */
 function ecommerce_joias_enqueue_styles() {
+	$stylesheet_path = get_stylesheet_directory() . '/style.css';
+	$parent_handle   = is_rtl() ? 'orchid-store-main-style-rtl' : 'orchid-store-main-style';
+
+	if ( is_front_page() ) {
+		/*
+		 * A página inicial usa somente templates e estilos próprios. Removemos os
+		 * pacotes visuais do tema-pai para antecipar a renderização do hero.
+		 */
+		wp_dequeue_style( 'orchid-store-style' );
+		wp_dequeue_style( $parent_handle );
+		wp_dequeue_style( 'orchid-store-fonts' );
+		wp_dequeue_style( 'orchid-store-fontawesome' );
+
+		wp_enqueue_style(
+			'ecommerce-joias-style',
+			get_stylesheet_uri(),
+			array(),
+			(string) filemtime( $stylesheet_path )
+		);
+
+		return;
+	}
 
 	// O pai usa get_stylesheet_uri(), que aponta para o filho quando ele está ativo.
 	wp_dequeue_style( 'orchid-store-style' );
@@ -20,9 +42,6 @@ function ecommerce_joias_enqueue_styles() {
 		wp_get_theme( get_template() )->get( 'Version' )
 	);
 
-	$stylesheet_path = get_stylesheet_directory() . '/style.css';
-	$parent_handle   = is_rtl() ? 'orchid-store-main-style-rtl' : 'orchid-store-main-style';
-
 	wp_enqueue_style(
 		'ecommerce-joias-style',
 		get_stylesheet_uri(),
@@ -31,6 +50,46 @@ function ecommerce_joias_enqueue_styles() {
 	);
 }
 add_action( 'wp_enqueue_scripts', 'ecommerce_joias_enqueue_styles', 20 );
+
+/**
+ * Reduz scripts que pertencem ao cabeçalho e ao catálogo do tema-pai, mas não
+ * são necessários para a página inicial construída pelo tema filho.
+ */
+function ecommerce_joias_reduce_homepage_scripts() {
+	if ( ! is_front_page() ) {
+		return;
+	}
+
+	wp_dequeue_script( 'orchid-store-bundle' );
+	wp_dequeue_script( 'wc-add-to-cart' );
+	wp_dequeue_script( 'wc-jquery-blockui' );
+	wp_dequeue_script( 'wc-js-cookie' );
+	wp_dequeue_script( 'woocommerce' );
+}
+add_action( 'wp_enqueue_scripts', 'ecommerce_joias_reduce_homepage_scripts', 100 );
+
+/**
+ * Inicia o download da imagem que forma o maior elemento visual da home antes
+ * da renderização do conteúdo, reduzindo o tempo até o Largest Contentful Paint.
+ */
+function ecommerce_joias_preload_hero_image() {
+	if ( ! is_front_page() ) {
+		return;
+	}
+
+	$hero_image_id = absint( get_theme_mod( 'ecommerce_joias_hero_image', 0 ) );
+	$hero_image_url = $hero_image_id ? wp_get_attachment_image_url( $hero_image_id, 'full' ) : false;
+
+	if ( ! $hero_image_url ) {
+		return;
+	}
+
+	printf(
+		'<link rel="preload" as="image" href="%s" fetchpriority="high">' . "\n",
+		esc_url( $hero_image_url )
+	);
+}
+add_action( 'wp_head', 'ecommerce_joias_preload_hero_image', 1 );
 
 /**
  * Adiciona as opções próprias da página inicial ao personalizador.
@@ -245,7 +304,7 @@ function ecommerce_joias_customize_register( $wp_customize ) {
 
 	$header_color_settings = array(
 		'ecommerce_joias_header_top_background' => array(
-			'label'   => __( 'Fundo da barra superior', 'ecommerce-joias' ),
+			'label'   => __( 'Linha de destaque superior', 'ecommerce-joias' ),
 			'default' => '#ae4540',
 		),
 		'ecommerce_joias_header_surface' => array(
@@ -423,7 +482,7 @@ function ecommerce_joias_customize_register( $wp_customize ) {
 			'default' => __( 'Enviar avaliação', 'ecommerce-joias' ),
 		),
 		'ecommerce_joias_store_account_menu_label' => array(
-			'label'   => __( 'Texto do atalho Minha conta no menu', 'ecommerce-joias' ),
+			'label'   => __( 'Rótulo acessível do ícone Minha conta', 'ecommerce-joias' ),
 			'default' => __( 'Minha conta', 'ecommerce-joias' ),
 		),
 	);
@@ -536,8 +595,8 @@ function ecommerce_joias_customize_register( $wp_customize ) {
 	$wp_customize->add_control(
 		'ecommerce_joias_store_account_menu_enabled',
 		array(
-			'label'       => __( 'Exibir atalho Minha conta no menu principal', 'ecommerce-joias' ),
-			'description' => __( 'O atalho abre a página de pedidos, endereços e dados do cliente.', 'ecommerce-joias' ),
+			'label'       => __( 'Exibir ícone Minha conta ao lado do carrinho', 'ecommerce-joias' ),
+			'description' => __( 'O ícone abre a página de pedidos, endereços e dados do cliente.', 'ecommerce-joias' ),
 			'section'     => 'ecommerce_joias_store',
 			'type'        => 'checkbox',
 		)
@@ -760,43 +819,6 @@ function ecommerce_joias_store_page_header_body_class( $classes ) {
 	return $classes;
 }
 add_filter( 'body_class', 'ecommerce_joias_store_page_header_body_class' );
-
-/**
- * Acrescenta um atalho configurável de Minha conta ao menu principal.
- *
- * @param string   $items Itens HTML do menu.
- * @param stdClass $args  Argumentos usados pelo wp_nav_menu().
- * @return string
- */
-function ecommerce_joias_add_account_menu_item( $items, $args ) {
-	if (
-		'menu-1' !== $args->theme_location ||
-		! get_theme_mod( 'ecommerce_joias_store_account_menu_enabled', true )
-	) {
-		return $items;
-	}
-
-	$account_page_id = wc_get_page_id( 'myaccount' );
-
-	if ( $account_page_id < 1 ) {
-		return $items;
-	}
-
-	$account_url = get_permalink( $account_page_id );
-
-	if ( false !== strpos( $items, $account_url ) ) {
-		return $items;
-	}
-
-	$label = get_theme_mod( 'ecommerce_joias_store_account_menu_label', 'Minha conta' );
-
-	return $items . sprintf(
-		'<li class="menu-item nc-account-menu-item"><a href="%1$s">%2$s</a></li>',
-		esc_url( $account_url ),
-		esc_html( $label )
-	);
-}
-add_filter( 'wp_nav_menu_items', 'ecommerce_joias_add_account_menu_item', 10, 2 );
 
 /**
  * Exibe os metadados do produto com rótulos consistentes em português.
