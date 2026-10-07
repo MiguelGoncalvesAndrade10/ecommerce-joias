@@ -84,9 +84,9 @@ $footer_copyright = get_theme_mod(
 
 	<!-- Botão de voltar ao topo da página -->
 	<?php if ( function_exists( 'orchid_store_get_option' ) && orchid_store_get_option( 'display_scroll_top_button' ) ) : ?>
-		<div class="orchid-backtotop">
+		<button type="button" class="orchid-backtotop" aria-label="<?php esc_attr_e( 'Voltar ao topo', 'ecommerce-joias' ); ?>"<?php echo is_front_page() ? ' hidden' : ''; ?>>
 			<span><i class="bx bx-chevron-up"></i></span>
-		</div>
+		</button>
 	<?php endif; ?>
 
 </div><!-- #page.site -->

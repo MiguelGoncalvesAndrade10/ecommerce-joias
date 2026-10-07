@@ -29,7 +29,7 @@ $account_label   = get_theme_mod( 'ecommerce_joias_store_account_menu_label', 'M
 			<?php esc_html_e( 'Pular para o conteúdo', 'ecommerce-joias' ); ?>
 		</a>
 
-		<header class="nc-header" id="masthead">
+		<header class="nc-header" id="masthead"<?php if ( ecommerce_joias_has_header_hero() ) : ?> data-hero-overlay="true"<?php if ( ! is_front_page() ) : ?> style="--nc-header-hero-text:<?php echo esc_attr( sanitize_hex_color( get_theme_mod( 'ecommerce_joias_about_photo_text', '#ffffff' ) ) ?: '#ffffff' ); ?>"<?php endif; ?><?php endif; ?>>
 			<div class="nc-header__row">
 				<div class="nc-header__brand">
 					<?php if ( has_custom_logo() ) : ?>

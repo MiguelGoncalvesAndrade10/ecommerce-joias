@@ -61,6 +61,10 @@ function ecommerce_joias_reduce_homepage_scripts() {
 	}
 
 	wp_dequeue_script( 'orchid-store-bundle' );
+	$category_carousel_path = get_stylesheet_directory() . '/assets/js/category-carousel.js';
+	wp_enqueue_script( 'ecommerce-joias-category-carousel', get_stylesheet_directory_uri() . '/assets/js/category-carousel.js', array(), (string) filemtime( $category_carousel_path ), true );
+	$back_to_top_path = get_stylesheet_directory() . '/assets/js/back-to-top.js';
+	wp_enqueue_script( 'ecommerce-joias-back-to-top', get_stylesheet_directory_uri() . '/assets/js/back-to-top.js', array(), (string) filemtime( $back_to_top_path ), true );
 	wp_dequeue_script( 'wc-add-to-cart' );
 	wp_dequeue_script( 'wc-jquery-blockui' );
 	wp_dequeue_script( 'wc-js-cookie' );
@@ -129,6 +133,45 @@ function ecommerce_joias_customize_register( $wp_customize ) {
 			)
 		)
 	);
+
+	foreach ( array(
+		'soft_sections' => array( 'Suavizar as mudanças de fundo entre seções', true ),
+		'section_reveal' => array( 'Entrada suave dos títulos e cards ao rolar', true ),
+	) as $key => $setting ) {
+		$id = 'ecommerce_joias_home_' . $key;
+		$wp_customize->add_setting( $id, array( 'default' => $setting[1], 'sanitize_callback' => 'wp_validate_boolean' ) );
+		$wp_customize->add_control( $id, array( 'label' => $setting[0], 'section' => 'ecommerce_joias_home', 'type' => 'checkbox' ) );
+	}
+	foreach ( array(
+		'product_card_width' => array( 'Largura máxima dos cards de produto da home (pixels)', 216, 160, 260 ),
+		'section_fade_height' => array( 'Altura dos degradês entre seções (pixels)', 64, 24, 120 ),
+	) as $key => $setting ) {
+		$id = 'ecommerce_joias_home_' . $key;
+		$wp_customize->add_setting( $id, array( 'default' => $setting[1], 'sanitize_callback' => 'ecommerce_joias_sanitize_carousel_number' ) );
+		$wp_customize->add_control( $id, array( 'label' => $setting[0], 'section' => 'ecommerce_joias_home', 'type' => 'range', 'input_attrs' => array( 'min' => $setting[2], 'max' => $setting[3], 'step' => 1 ) ) );
+	}
+	foreach ( array(
+		'category_background' => array( 'Fundo da área de categorias', '#fbf5f1' ),
+		'product_background' => array( 'Fundo da vitrine de produtos', '#fffaf7' ),
+	) as $key => $setting ) {
+		$id = 'ecommerce_joias_home_' . $key;
+		$wp_customize->add_setting( $id, array( 'default' => $setting[1], 'sanitize_callback' => 'sanitize_hex_color' ) );
+		$wp_customize->add_control( new WP_Customize_Color_Control( $wp_customize, $id, array( 'label' => $setting[0], 'section' => 'ecommerce_joias_home' ) ) );
+	}
+
+	$wp_customize->add_setting( 'ecommerce_joias_category_carousel', array( 'default' => true, 'sanitize_callback' => 'wp_validate_boolean' ) );
+	$wp_customize->add_control( 'ecommerce_joias_category_carousel', array( 'label' => __( 'Exibir categorias em carrossel', 'ecommerce-joias' ), 'description' => __( 'Desative para mostrar todas as categorias em grade. Categorias e fotos são gerenciadas em Produtos → Categorias.', 'ecommerce-joias' ), 'section' => 'ecommerce_joias_home', 'type' => 'checkbox' ) );
+
+	$wp_customize->add_setting( 'ecommerce_joias_category_autoplay', array( 'default' => true, 'sanitize_callback' => 'wp_validate_boolean' ) );
+	$wp_customize->add_control( 'ecommerce_joias_category_autoplay', array( 'label' => __( 'Movimento contínuo das categorias', 'ecommerce-joias' ), 'section' => 'ecommerce_joias_home', 'type' => 'checkbox' ) );
+	foreach ( array(
+		'card_width' => array( 'Largura dos cards de categoria (pixels)', 200, 140, 280 ),
+		'speed' => array( 'Velocidade do carrossel (pixels por segundo)', 28, 10, 80 ),
+	) as $key => $setting ) {
+		$id = 'ecommerce_joias_category_' . $key;
+		$wp_customize->add_setting( $id, array( 'default' => $setting[1], 'sanitize_callback' => 'ecommerce_joias_sanitize_carousel_number' ) );
+		$wp_customize->add_control( $id, array( 'label' => $setting[0], 'section' => 'ecommerce_joias_home', 'type' => 'range', 'input_attrs' => array( 'min' => $setting[2], 'max' => $setting[3], 'step' => 1 ) ) );
+	}
 
 	$wp_customize->add_setting(
 		'ecommerce_joias_brand_story_enabled',
@@ -225,6 +268,51 @@ function ecommerce_joias_customize_register( $wp_customize ) {
 		)
 	);
 
+	foreach ( array(
+		'closing_title' => array( 'Título do encerramento', 'Encontre a joia que faz parte da sua história', 'text' ),
+		'closing_description' => array( 'Texto do encerramento', 'Conheça nossas peças e escolha os detalhes que acompanham você.', 'textarea' ),
+		'closing_button' => array( 'Texto do botão', 'Conheça nossa coleção', 'text' ),
+		'closing_url' => array( 'Link do botão (vazio usa a página Produtos)', '', 'url' ),
+	) as $key => $setting ) {
+		$id = 'ecommerce_joias_about_' . $key;
+		$wp_customize->add_setting( $id, array( 'default' => $setting[1], 'sanitize_callback' => 'url' === $setting[2] ? 'esc_url_raw' : ( 'textarea' === $setting[2] ? 'sanitize_textarea_field' : 'sanitize_text_field' ) ) );
+		$wp_customize->add_control( $id, array( 'label' => $setting[0], 'section' => 'ecommerce_joias_about', 'type' => $setting[2] ) );
+	}
+
+	foreach ( array( 'hero_image' => 'Foto da abertura (horizontal)', 'closing_image' => 'Foto do encerramento (horizontal)' ) as $key => $label ) {
+		$id = 'ecommerce_joias_about_' . $key;
+		$wp_customize->add_setting( $id, array( 'default' => 0, 'sanitize_callback' => 'absint' ) );
+		$wp_customize->add_control( new WP_Customize_Media_Control( $wp_customize, $id, array( 'label' => $label, 'section' => 'ecommerce_joias_about', 'mime_type' => 'image' ) ) );
+	}
+
+	foreach ( array(
+		'parallax' => array( 'Ativar parallax na abertura (computador)', true ),
+		'reveal' => array( 'Ativar entradas suaves dos textos e valores', true ),
+		'photo_pop' => array( 'Efeito pop-up na foto / bloco NC', true ),
+		'hover' => array( 'Ativar movimento dos cartões ao passar o mouse', true ),
+		'sticky' => array( 'Manter foto da história fixa durante a leitura (computador)', false ),
+		'show_closing' => array( 'Mostrar seção de encerramento', true ),
+	) as $key => $setting ) {
+		$id = 'ecommerce_joias_about_' . $key;
+		$wp_customize->add_setting( $id, array( 'default' => $setting[1], 'sanitize_callback' => 'ecommerce_joias_about_sanitize_checkbox' ) );
+		$wp_customize->add_control( $id, array( 'label' => $setting[0], 'section' => 'ecommerce_joias_about', 'type' => 'checkbox' ) );
+	}
+
+	foreach ( array(
+		'hero_height' => array( 'Altura da abertura (% da tela)', 80, 45, 100 ),
+		'parallax_strength' => array( 'Intensidade do parallax (pixels)', 60, 0, 120 ),
+		'overlay' => array( 'Escurecimento das fotos (%)', 35, 0, 80 ),
+		'hero_position' => array( 'Posição vertical da foto de abertura (%)', 50, 0, 100 ),
+		'closing_position' => array( 'Posição vertical da foto de encerramento (%)', 50, 0, 100 ),
+		'pop_intensity' => array( 'Intensidade do pop-up da foto (%)', 28, 4, 45 ),
+		'pop_duration' => array( 'Duração do pop-up da foto (milissegundos)', 900, 300, 1200 ),
+		'pop_depth' => array( 'Quanto descer a tela antes do pop-up (%)', 45, 15, 65 ),
+	) as $key => $setting ) {
+		$id = 'ecommerce_joias_about_' . $key;
+		$wp_customize->add_setting( $id, array( 'default' => $setting[1], 'sanitize_callback' => 'ecommerce_joias_about_sanitize_range' ) );
+		$wp_customize->add_control( $id, array( 'label' => $setting[0], 'section' => 'ecommerce_joias_about', 'type' => 'range', 'input_attrs' => array( 'min' => $setting[2], 'max' => $setting[3], 'step' => 1 ) ) );
+	}
+
 	$about_text_settings = array(
 		'ecommerce_joias_about_eyebrow' => array( 'label' => __( 'Chamada curta', 'ecommerce-joias' ), 'default' => __( 'A essência da NC', 'ecommerce-joias' ), 'type' => 'text' ),
 		'ecommerce_joias_about_title' => array( 'label' => __( 'Título principal', 'ecommerce-joias' ), 'default' => __( 'Joias para acompanhar a sua história', 'ecommerce-joias' ), 'type' => 'text' ),
@@ -248,9 +336,11 @@ function ecommerce_joias_customize_register( $wp_customize ) {
 	}
 
 	$wp_customize->add_setting( 'ecommerce_joias_about_image', array( 'default' => 0, 'sanitize_callback' => 'absint' ) );
-	$wp_customize->add_control( new WP_Customize_Media_Control( $wp_customize, 'ecommerce_joias_about_image', array( 'label' => __( 'Imagem da página', 'ecommerce-joias' ), 'description' => __( 'Prefira uma imagem vertical ou próxima do quadrado.', 'ecommerce-joias' ), 'section' => 'ecommerce_joias_about', 'mime_type' => 'image' ) ) );
+	$wp_customize->add_control( new WP_Customize_Media_Control( $wp_customize, 'ecommerce_joias_about_image', array( 'label' => __( 'Foto da história', 'ecommerce-joias' ), 'description' => __( 'Prefira uma imagem vertical ou próxima do quadrado.', 'ecommerce-joias' ), 'section' => 'ecommerce_joias_about', 'mime_type' => 'image' ) ) );
 
 	foreach ( array(
+		'ecommerce_joias_about_text' => array( 'label' => __( 'Cor dos textos da página', 'ecommerce-joias' ), 'default' => '#332927' ),
+		'ecommerce_joias_about_photo_text' => array( 'label' => __( 'Cor dos textos sobre as fotos', 'ecommerce-joias' ), 'default' => '#ffffff' ),
 		'ecommerce_joias_about_background' => array( 'label' => __( 'Fundo da página', 'ecommerce-joias' ), 'default' => '#fffaf7' ),
 		'ecommerce_joias_about_accent' => array( 'label' => __( 'Cor de destaque', 'ecommerce-joias' ), 'default' => '#ae4540' ),
 	) as $setting_id => $setting ) {
@@ -302,7 +392,11 @@ function ecommerce_joias_customize_register( $wp_customize ) {
 		)
 	);
 
+	$wp_customize->add_setting( 'ecommerce_joias_header_transparent_hero', array( 'default' => true, 'sanitize_callback' => 'ecommerce_joias_about_sanitize_checkbox' ) );
+	$wp_customize->add_control( 'ecommerce_joias_header_transparent_hero', array( 'label' => __( 'Cabeçalho transparente sobre o hero com foto', 'ecommerce-joias' ), 'section' => 'ecommerce_joias_header', 'type' => 'checkbox' ) );
+
 	$header_color_settings = array(
+		'ecommerce_joias_header_hero_text' => array( 'label' => __( 'Texto e ícones sobre o hero da home', 'ecommerce-joias' ), 'default' => '#332927' ),
 		'ecommerce_joias_header_top_background' => array(
 			'label'   => __( 'Linha de destaque superior', 'ecommerce-joias' ),
 			'default' => '#ae4540',
@@ -439,6 +533,21 @@ function ecommerce_joias_customize_register( $wp_customize ) {
 			'priority' => 33,
 		)
 	);
+
+	$wp_customize->add_section( 'ecommerce_joias_product_cards', array( 'title' => __( 'Cards de produto', 'ecommerce-joias' ), 'priority' => 34 ) );
+	foreach ( array(
+		'background' => array( 'Fundo do card', '#fffaf7' ),
+		'image_background' => array( 'Fundo da área da foto', '#f7efea' ),
+		'border' => array( 'Borda do card', '#d9c6bc' ),
+		'text' => array( 'Nome do produto', '#332927' ),
+		'accent' => array( 'Preço e detalhes do card', '#ae4540' ),
+	) as $key => $setting ) {
+		$id = 'ecommerce_joias_card_' . $key;
+		$wp_customize->add_setting( $id, array( 'default' => $setting[1], 'sanitize_callback' => 'sanitize_hex_color' ) );
+		$wp_customize->add_control( new WP_Customize_Color_Control( $wp_customize, $id, array( 'label' => $setting[0], 'section' => 'ecommerce_joias_product_cards' ) ) );
+	}
+	$wp_customize->add_setting( 'ecommerce_joias_card_radius', array( 'default' => 8, 'sanitize_callback' => 'ecommerce_joias_sanitize_card_radius' ) );
+	$wp_customize->add_control( 'ecommerce_joias_card_radius', array( 'label' => __( 'Arredondamento dos cantos (pixels)', 'ecommerce-joias' ), 'section' => 'ecommerce_joias_product_cards', 'type' => 'range', 'input_attrs' => array( 'min' => 0, 'max' => 24, 'step' => 1 ) ) );
 
 	$store_text_settings = array(
 		'ecommerce_joias_store_add_to_cart_label' => array(
@@ -615,6 +724,7 @@ function ecommerce_joias_enqueue_header_color_variables() {
 			'ecommerce_joias_header_navigation_background',
 			'#fffaf7'
 		),
+		'--nc-header-hero-text' => get_theme_mod( 'ecommerce_joias_header_hero_text', '#332927' ),
 		'--nc-header-text'           => get_theme_mod( 'ecommerce_joias_header_text', '#332927' ),
 		'--nc-header-accent'         => get_theme_mod( 'ecommerce_joias_header_accent', '#ae4540' ),
 		'--nc-footer-background'     => get_theme_mod( 'ecommerce_joias_footer_background', '#332927' ),
@@ -652,6 +762,11 @@ function ecommerce_joias_enqueue_header_color_variables() {
 			'ecommerce_joias_store_account_navigation_active',
 			'#ae4540'
 		),
+		'--nc-card-background' => get_theme_mod( 'ecommerce_joias_card_background', '#fffaf7' ),
+		'--nc-card-image-background' => get_theme_mod( 'ecommerce_joias_card_image_background', '#f7efea' ),
+		'--nc-card-border' => get_theme_mod( 'ecommerce_joias_card_border', '#d9c6bc' ),
+		'--nc-card-text' => get_theme_mod( 'ecommerce_joias_card_text', '#332927' ),
+		'--nc-card-accent' => get_theme_mod( 'ecommerce_joias_card_accent', '#ae4540' ),
 		'--nc-about-background' => get_theme_mod( 'ecommerce_joias_about_background', '#fffaf7' ),
 		'--nc-about-accent' => get_theme_mod( 'ecommerce_joias_about_accent', '#ae4540' ),
 	);
@@ -661,6 +776,8 @@ function ecommerce_joias_enqueue_header_color_variables() {
 	foreach ( $theme_colors as $variable => $color ) {
 		$css_variables[] = $variable . ': ' . ( sanitize_hex_color( $color ) ?: '#ae4540' ) . ';';
 	}
+
+	$css_variables[] = '--nc-card-radius:' . ecommerce_joias_sanitize_card_radius( get_theme_mod( 'ecommerce_joias_card_radius', 8 ) ) . 'px;';
 
 	wp_add_inline_style(
 		'ecommerce-joias-style',
@@ -870,3 +987,85 @@ function ecommerce_joias_enqueue_hero_parallax() {
 	);
 }
 add_action( 'wp_enqueue_scripts', 'ecommerce_joias_enqueue_hero_parallax', 30 );
+
+/** Sanitiza os controles de apresentação da página Sobre. */
+function ecommerce_joias_about_sanitize_checkbox( $value ) {
+	return (bool) $value;
+}
+
+function ecommerce_joias_about_sanitize_range( $value, $setting ) {
+	$control = $setting->manager->get_control( $setting->id );
+	return max( $control->input_attrs['min'], min( $control->input_attrs['max'], absint( $value ) ) );
+}
+
+/** Carrega os efeitos somente na página institucional. */
+function ecommerce_joias_enqueue_about_effects() {
+	if ( ! is_page( 'sobre-a-loja' ) && ! is_page_template( 'page-sobre-a-loja.php' ) ) {
+		return;
+	}
+	$path = get_stylesheet_directory() . '/assets/js/about-effects.js';
+	wp_enqueue_script( 'ecommerce-joias-about-effects', get_stylesheet_directory_uri() . '/assets/js/about-effects.js', array(), (string) filemtime( $path ), true );
+}
+add_action( 'wp_enqueue_scripts', 'ecommerce_joias_enqueue_about_effects', 30 );
+
+/** Limita o arredondamento dos cards ao intervalo oferecido no painel. */
+function ecommerce_joias_sanitize_card_radius( $value ) {
+	return max( 0, min( 24, absint( $value ) ) );
+}
+
+/** Identifica páginas com foto de abertura para sobrepor o cabeçalho. */
+function ecommerce_joias_has_header_hero() {
+	if ( ! get_theme_mod( 'ecommerce_joias_header_transparent_hero', true ) ) {
+		return false;
+	}
+	if ( is_front_page() ) {
+		return (bool) wp_get_attachment_image_url( absint( get_theme_mod( 'ecommerce_joias_hero_image', 0 ) ), 'full' );
+	}
+	if ( is_page( 'sobre-a-loja' ) || is_page_template( 'page-sobre-a-loja.php' ) ) {
+		return (bool) wp_get_attachment_image_url( absint( get_theme_mod( 'ecommerce_joias_about_hero_image', 0 ) ), 'full' );
+	}
+	return false;
+}
+
+function ecommerce_joias_enqueue_header_hero() {
+	if ( ! ecommerce_joias_has_header_hero() ) {
+		return;
+	}
+	$path = get_stylesheet_directory() . '/assets/js/header-hero.js';
+	wp_enqueue_script( 'ecommerce-joias-header-hero', get_stylesheet_directory_uri() . '/assets/js/header-hero.js', array(), (string) filemtime( $path ), true );
+}
+add_action( 'wp_enqueue_scripts', 'ecommerce_joias_enqueue_header_hero', 30 );
+
+/** Limita tamanho e velocidade aos intervalos oferecidos no painel. */
+function ecommerce_joias_sanitize_carousel_number( $value, $setting ) {
+	$control = $setting->manager->get_control( $setting->id );
+	return max( $control->input_attrs['min'], min( $control->input_attrs['max'], absint( $value ) ) );
+}
+
+/** Aplica controles e animações apenas à página inicial. */
+function ecommerce_joias_enqueue_home_sections() {
+	if ( ! is_front_page() ) {
+		return;
+	}
+	$variables = array(
+		'--nc-home-product-card-width:' . max( 160, min( 260, absint( get_theme_mod( 'ecommerce_joias_home_product_card_width', 216 ) ) ) ) . 'px;',
+		'--nc-home-section-fade-height:' . max( 24, min( 120, absint( get_theme_mod( 'ecommerce_joias_home_section_fade_height', 64 ) ) ) ) . 'px;',
+	);
+	foreach ( array( 'category_background' => '#fbf5f1', 'product_background' => '#fffaf7' ) as $key => $default ) {
+		$variables[] = '--nc-home-' . str_replace( '_', '-', $key ) . ':' . ( sanitize_hex_color( get_theme_mod( 'ecommerce_joias_home_' . $key, $default ) ) ?: $default ) . ';';
+	}
+	wp_add_inline_style( 'ecommerce-joias-style', ':root{' . implode( '', $variables ) . '}' );
+	if ( get_theme_mod( 'ecommerce_joias_home_section_reveal', true ) ) {
+		$path = get_stylesheet_directory() . '/assets/js/home-sections.js';
+		wp_enqueue_script( 'ecommerce-joias-home-sections', get_stylesheet_directory_uri() . '/assets/js/home-sections.js', array(), (string) filemtime( $path ), true );
+	}
+}
+add_action( 'wp_enqueue_scripts', 'ecommerce_joias_enqueue_home_sections', 40 );
+
+function ecommerce_joias_home_body_classes( $classes ) {
+	if ( is_front_page() && get_theme_mod( 'ecommerce_joias_home_soft_sections', true ) ) {
+		$classes[] = 'nc-home-soft-sections';
+	}
+	return $classes;
+}
+add_filter( 'body_class', 'ecommerce_joias_home_body_classes' );

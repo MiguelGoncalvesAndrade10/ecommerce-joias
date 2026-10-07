@@ -29,7 +29,7 @@ $featured_categories = get_terms(
 	array(
 		'taxonomy'   => 'product_cat',
 		'hide_empty' => true,
-		'number'     => 4,
+		'number'     => 0,
 		'orderby'    => 'count',
 		'order'      => 'DESC',
 	)
@@ -74,11 +74,16 @@ if ( $brand_story_image_id ) {
 	);
 }
 
+$home_has_categories = ! is_wp_error( $featured_categories ) && (bool) $featured_categories;
+$hero_next_background = $home_has_categories ? 'var(--nc-home-category-background)' : ( $featured_products ? 'var(--nc-home-product-background)' : ( $brand_story_enabled ? ( $brand_story_background ?: '#ae4540' ) : 'var(--nc-footer-background)' ) );
+$product_previous_background = $home_has_categories ? 'var(--nc-home-category-background)' : 'var(--nc-home-product-background)';
+$story_previous_background = $featured_products ? 'var(--nc-home-product-background)' : ( $home_has_categories ? 'var(--nc-home-category-background)' : ( $brand_story_background ?: '#ae4540' ) );
+
 get_header();
 ?>
 
-<main id="primary" class="site-main">
-	<section class="nc-hero">
+<main id="primary" class="site-main nc-home-page">
+	<section class="nc-hero" style="--nc-home-next-background:<?php echo esc_attr( $hero_next_background ); ?>;">
 		<?php if ( $hero_image ) : ?>
 			<div class="nc-hero__media" aria-hidden="true">
 				<?php echo wp_kses_post( $hero_image ); ?>
@@ -100,9 +105,9 @@ get_header();
 		</div>
 	</section>
 
-	<?php if ( ! is_wp_error( $featured_categories ) && $featured_categories ) : ?>
+	<?php if ( $home_has_categories ) : ?>
 		<section class="nc-category-showcase" aria-labelledby="nc-category-showcase-title">
-			<div class="nc-section-heading">
+			<div class="nc-section-heading" data-home-reveal>
 				<p class="nc-section-heading__eyebrow">Encontre a sua peça</p>
 
 				<h2 id="nc-category-showcase-title">Explore por categoria</h2>
@@ -110,7 +115,15 @@ get_header();
 				<p>Descubra detalhes feitos para cada momento e estilo.</p>
 			</div>
 
-			<div class="nc-category-grid">
+			<?php $category_carousel = (bool) get_theme_mod( 'ecommerce_joias_category_carousel', true ); ?>
+			<div class="<?php echo $category_carousel ? 'nc-category-carousel' : 'nc-category-layout'; ?>" data-home-reveal style="--nc-category-card-width:<?php echo esc_attr( max( 140, min( 280, absint( get_theme_mod( 'ecommerce_joias_category_card_width', 200 ) ) ) ) ); ?>px" data-autoplay="<?php echo get_theme_mod( 'ecommerce_joias_category_autoplay', true ) ? 'true' : 'false'; ?>" data-speed="<?php echo esc_attr( max( 10, min( 80, absint( get_theme_mod( 'ecommerce_joias_category_speed', 28 ) ) ) ) ); ?>">
+			<?php if ( $category_carousel ) : ?>
+				<div class="nc-category-carousel__controls" hidden>
+					<button type="button" class="nc-category-carousel__arrow" data-category-previous aria-controls="nc-category-track" aria-label="<?php esc_attr_e( 'Categorias anteriores', 'ecommerce-joias' ); ?>"><span aria-hidden="true">←</span></button>
+					<button type="button" class="nc-category-carousel__arrow" data-category-next aria-controls="nc-category-track" aria-label="<?php esc_attr_e( 'Próximas categorias', 'ecommerce-joias' ); ?>"><span aria-hidden="true">→</span></button>
+				</div>
+			<?php endif; ?>
+			<div id="nc-category-track" class="nc-category-grid<?php echo $category_carousel ? ' nc-category-carousel__track' : ''; ?>"<?php if ( $category_carousel ) : ?> role="region" aria-label="<?php esc_attr_e( 'Carrossel de categorias', 'ecommerce-joias' ); ?>" tabindex="0"<?php endif; ?>>
 				<?php foreach ( $featured_categories as $category ) : ?>
 					<?php
 					$thumbnail_id = absint( get_term_meta( $category->term_id, 'thumbnail_id', true ) );
@@ -146,12 +159,16 @@ get_header();
 					<?php endif; ?>
 				<?php endforeach; ?>
 			</div>
+			<?php if ( $category_carousel ) : ?>
+				<button type="button" class="nc-category-carousel__playback" data-category-pause hidden aria-pressed="false" aria-controls="nc-category-track" data-pause-label="<?php esc_attr_e( 'Pausar movimento', 'ecommerce-joias' ); ?>" data-resume-label="<?php esc_attr_e( 'Retomar movimento', 'ecommerce-joias' ); ?>"><?php esc_html_e( 'Pausar movimento', 'ecommerce-joias' ); ?></button>
+			<?php endif; ?>
+			</div>
 		</section>
 	<?php endif; ?>
 
 	<?php if ( $featured_products ) : ?>
-		<section class="nc-product-showcase" aria-labelledby="nc-product-showcase-title">
-			<div class="nc-section-heading">
+		<section class="nc-product-showcase" aria-labelledby="nc-product-showcase-title" style="--nc-home-previous-background:<?php echo esc_attr( $product_previous_background ); ?>;">
+			<div class="nc-section-heading" data-home-reveal>
 				<p class="nc-section-heading__eyebrow">Acabou de chegar</p>
 
 				<h2 id="nc-product-showcase-title">Novidades da coleção</h2>
@@ -160,8 +177,8 @@ get_header();
 			</div>
 
 			<div class="nc-featured-product-grid">
-				<?php foreach ( $featured_products as $featured_product ) : ?>
-					<article class="nc-featured-product">
+				<?php foreach ( $featured_products as $product_index => $featured_product ) : ?>
+					<article class="nc-featured-product" data-home-reveal style="--nc-home-reveal-delay:<?php echo esc_attr( $product_index * 70 ); ?>ms;">
 						<a
 							class="nc-featured-product__media"
 							href="<?php echo esc_url( $featured_product->get_permalink() ); ?>"
@@ -194,14 +211,14 @@ get_header();
 								class="nc-featured-product__link"
 								href="<?php echo esc_url( $featured_product->get_permalink() ); ?>"
 							>
-								Ver produto
+								<?php echo esc_html( get_theme_mod( 'ecommerce_joias_store_view_product_label', 'Ver produto' ) ); ?>
 							</a>
 						</div>
 					</article>
 				<?php endforeach; ?>
 			</div>
 
-			<div class="nc-product-showcase__action">
+			<div class="nc-product-showcase__action" data-home-reveal>
 				<a class="wp-block-button__link" href="<?php echo esc_url( wc_get_page_permalink( 'shop' ) ); ?>">
 					Ver todos os produtos
 				</a>
@@ -213,9 +230,9 @@ get_header();
 		<section
 			class="nc-brand-story"
 			aria-labelledby="nc-brand-story-title"
-			style="--nc-brand-story-background: <?php echo esc_attr( $brand_story_background ? $brand_story_background : '#ae4540' ); ?>;"
+			style="--nc-home-previous-background:<?php echo esc_attr( $story_previous_background ); ?>;--nc-brand-story-background: <?php echo esc_attr( $brand_story_background ? $brand_story_background : '#ae4540' ); ?>;"
 		>
-			<div class="nc-brand-story__content">
+			<div class="nc-brand-story__content" data-home-reveal>
 				<p class="nc-section-heading__eyebrow">
 					<?php echo esc_html( $brand_story_eyebrow ); ?>
 				</p>
@@ -233,7 +250,7 @@ get_header();
 				</a>
 			</div>
 
-			<div class="nc-brand-story__art" aria-hidden="true">
+			<div class="nc-brand-story__art" aria-hidden="true" data-home-reveal>
 				<?php if ( $brand_story_image ) : ?>
 					<?php echo wp_kses_post( $brand_story_image ); ?>
 				<?php else : ?>
