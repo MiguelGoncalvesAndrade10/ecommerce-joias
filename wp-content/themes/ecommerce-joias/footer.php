@@ -5,10 +5,14 @@
  * @package Ecommerce_Joias
  */
 
+/**
+ * Funções e variáveis do rodapé do tema Ecommerce Joias.
+ */
 $footer_description = get_theme_mod(
 	'ecommerce_joias_footer_description',
 	'Joias escolhidas para acompanhar momentos que merecem ser lembrados.'
 );
+
 $footer_email = get_theme_mod( 'ecommerce_joias_footer_email', '' );
 $footer_instagram = get_theme_mod( 'ecommerce_joias_footer_instagram', '' );
 $footer_copyright = get_theme_mod(
@@ -18,6 +22,7 @@ $footer_copyright = get_theme_mod(
 ?>
 	</div><!-- #content.site-content -->
 
+	<!-- Nome ou logo da marca + Navegação -->
 	<footer class="nc-site-footer">
 		<div class="nc-site-footer__main">
 			<div class="nc-site-footer__brand">
@@ -32,6 +37,7 @@ $footer_copyright = get_theme_mod(
 				<p><?php echo nl2br( esc_html( $footer_description ) ); ?></p>
 			</div>
 
+			<!-- Menu de navegação do rodapé -->
 			<nav class="nc-site-footer__navigation" aria-label="<?php esc_attr_e( 'Navegação do rodapé', 'ecommerce-joias' ); ?>">
 				<h2><?php esc_html_e( 'Navegue', 'ecommerce-joias' ); ?></h2>
 
@@ -46,7 +52,7 @@ $footer_copyright = get_theme_mod(
 				);
 				?>
 			</nav>
-
+			<!-- Menu de contato do rodapé -->
 			<?php if ( $footer_email || $footer_instagram ) : ?>
 				<div class="nc-site-footer__contact">
 					<h2><?php esc_html_e( 'Atendimento', 'ecommerce-joias' ); ?></h2>
@@ -66,6 +72,7 @@ $footer_copyright = get_theme_mod(
 			<?php endif; ?>
 		</div>
 
+		<!-- Area de copyright do rodapé -->
 		<div class="nc-site-footer__bottom">
 			<p>
 				© <?php echo esc_html( wp_date( 'Y' ) ); ?>
@@ -75,6 +82,7 @@ $footer_copyright = get_theme_mod(
 		</div>
 	</footer>
 
+	<!-- Botão de voltar ao topo da página -->
 	<?php if ( function_exists( 'orchid_store_get_option' ) && orchid_store_get_option( 'display_scroll_top_button' ) ) : ?>
 		<div class="orchid-backtotop">
 			<span><i class="bx bx-chevron-up"></i></span>
